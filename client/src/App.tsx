@@ -11,6 +11,12 @@ import { AppProvider } from './contexts/AppContext';
 import { getToken } from './utils/storage'; // Import your getToken utility
 import ConnectedPlatforms from './screens/ConnectPlatforms';
 import OAuth from './constants/OAuth';
+import 'react-native-get-random-values';
+import 'react-native-url-polyfill/auto';
+import { Buffer } from 'buffer';
+
+global.Buffer = Buffer;
+global.process = require('process');
 
 export type RootStackParamList = {
   Splash: undefined;
