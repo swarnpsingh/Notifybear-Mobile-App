@@ -1,3 +1,4 @@
+import LinearGradient from 'react-native-linear-gradient'
 import { colors } from '../constants/theme'
 import { ScreenWrapperProps } from '../types'
 import React from 'react'
@@ -10,10 +11,18 @@ const ScreenWrapper = ({style, children}: ScreenWrapperProps) => {
     let paddingTop = Platform.OS === 'ios' ? height * 0.06 : 50;
     
     return (
-        <View style={styles.container}>
+        <LinearGradient
+            colors={['#0A1128', '#000000']}
+            start={{ x: 0, y: 0 }} // Top center
+            end={{ x: 0, y: 1 }}   // Bottom center
+            style={[{
+                paddingTop,
+                flex: 1,
+            }, style]}
+        >
             <StatusBar barStyle="light-content" />
             {children}
-        </View>
+        </LinearGradient>
     )
 }
 

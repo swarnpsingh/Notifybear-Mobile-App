@@ -1,4 +1,12 @@
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Alert,
+  TextInput,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import Button from '../components/Button';
@@ -6,6 +14,7 @@ import Typo from '../components/Typo';
 import ScreenWrapper from '../components/ScreenWrapper';
 import TopNav2 from '../components/TopNav2';
 import { useFocusEffect } from '@react-navigation/native';
+import { colors } from '../constants/theme';
 
 const ConnectedPlatforms = ({ navigation }: { navigation: any }) => {
   const { fetchYouTubeSubscriptions, fetchTwitchFollows } = useAppContext();
@@ -13,77 +22,110 @@ const ConnectedPlatforms = ({ navigation }: { navigation: any }) => {
     new Set(),
   );
 
-  // Check for Twitch token when screen comes into focus
+  // Check for tokens when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
-      const checkTwitchToken = async () => {
+      const checkTokens = async () => {
         const { getToken } = require('../utils/storage');
+
+        // Check Twitch token
         const twitchToken = await getToken('twitch_token');
         if (twitchToken && !selectedPlatforms.has('twitch')) {
           setSelectedPlatforms(prev => new Set([...prev, 'twitch']));
-          Alert.alert('Success', 'Twitch connected successfully!');
         }
       };
-      checkTwitchToken();
-    }, [selectedPlatforms])
+      checkTokens();
+    }, [selectedPlatforms]),
   );
+
   return (
     <ScreenWrapper>
-      <TopNav2 title="Connect Platforms" />
       <View style={styles.container}>
-        <Text style={styles.heading}>Connected Platforms</Text>
+        <View style={{ flex: 1 }}>
+          <View style={styles.headerContainer}>
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+              <Text style={styles.caretIcon}>‹</Text>
+            </TouchableOpacity>
+            <Typo size={26} fontWeight={'600'}>
+              Add Social Platforms
+            </Typo>
+          </View>
 
-        <PlatformCard
-          name="YouTube"
-          connected={selectedPlatforms.has('youtube')}
-          onConnect={() => {
-            setSelectedPlatforms(prev => new Set([...prev, 'youtube']));
-            Alert.alert('Success', 'YouTube selected!');
-          }}
-        />
-
-        <PlatformCard
-          name="Instagram"
-          connected={selectedPlatforms.has('instagram')}
-          onConnect={() => {
-            setSelectedPlatforms(prev => new Set([...prev, 'instagram']));
-            Alert.alert('Success', 'Instagram selected!');
-          }}
-        />
-
-        <PlatformCard
-          name="X (Twitter)"
-          connected={selectedPlatforms.has('twitter')}
-          onConnect={() => {
-            setSelectedPlatforms(prev => new Set([...prev, 'twitter']));
-            Alert.alert('Success', 'X (Twitter) selected!');
-          }}
-        />
-
-        <PlatformCard
-          name="Twitch"
-          connected={selectedPlatforms.has('twitch')}
-          onConnect={() => {
-            navigation.navigate('OAuth', { platform: 'twitch' });
-          }}
-        />
-
-        <Button onPress={async () => {
-          try {
-            // Fetch data for selected platforms
-            if (selectedPlatforms.has('youtube')) {
-              await fetchYouTubeSubscriptions();
-            }
-            if (selectedPlatforms.has('twitch')) {
-              await fetchTwitchFollows();
-            }
-            navigation.replace('Tabs');
-          } catch (error) {
-            Alert.alert('Error', 'Failed to fetch data. Please try again.');
-          }
-        }}>
-          <Typo>Proceed</Typo>
-        </Button>
+          <TextInput
+            placeholder="🔍 Search Apps"
+            style={styles.searchInput}
+            placeholderTextColor={'CCCCCC'}
+          />
+          <View style={styles.platformGrid}>
+            {[
+              {
+                key: 'youtube',
+                label: 'YouTube',
+                icon: require('../assets/icons8-youtube-48.png'),
+              },
+              {
+                key: 'instagram',
+                label: 'Instagram',
+                icon: require('../assets/icons8-instagram-logo-48.png'),
+              },
+              {
+                key: 'twitter',
+                label: 'X (Twitter)',
+                icon: require('../assets/icons8-x-logo-50.png'),
+              },
+              {
+                key: 'twitch',
+                label: 'Twitch',
+                icon: require('../assets/icons8-twitch.gif'),
+              },
+            ].map(platform => (
+              <PlatformCard
+                key={platform.key}
+                name={platform.label}
+                icon={platform.icon}
+                selected={selectedPlatforms.has(platform.key)}
+                onPress={() => {
+                  setSelectedPlatforms(prev => {
+                    const newSet = new Set(prev);
+                    if (newSet.has(platform.key)) {
+                      newSet.delete(platform.key);
+                    } else {
+                      newSet.add(platform.key);
+                    }
+                    return newSet;
+                  });
+                  if (platform.key === 'twitter')
+                    navigation.navigate('OAuthTwitter');
+                  if (platform.key === 'twitch')
+                    navigation.navigate('OAuth', { platform: 'twitch' });
+                }}
+              />
+            ))}
+          </View>
+        </View>
+        <View style={{ alignItems: 'center', width: '100%', marginBottom: 24 }}>
+          <Button
+            onPress={async () => {
+              try {
+                // Fetch data for selected platforms
+                if (selectedPlatforms.has('youtube')) {
+                  await fetchYouTubeSubscriptions();
+                }
+                if (selectedPlatforms.has('twitch')) {
+                  await fetchTwitchFollows();
+                }
+                // if (selectedPlatforms.has('twitter')) {
+                //   await fetchTwitterFollows();
+                // }
+                navigation.navigate('AddCreators', { platforms: Array.from(selectedPlatforms) });
+              } catch (error) {
+                Alert.alert('Error', 'Failed to fetch data. Please try again.');
+              }
+            }}
+          >
+            <Typo>Proceed ➕</Typo>
+          </Button>
+        </View>
       </View>
     </ScreenWrapper>
   );
@@ -91,23 +133,39 @@ const ConnectedPlatforms = ({ navigation }: { navigation: any }) => {
 
 const PlatformCard = ({
   name,
-  connected = false,
-  onConnect,
+  icon,
+  selected = false,
+  onPress,
 }: {
   name: string;
-  connected?: boolean;
-  onConnect: () => void;
+  icon: any;
+  selected?: boolean;
+  onPress: () => void;
 }) => (
-  <View style={styles.card}>
-    <Text style={styles.name}>{name}</Text>
-    {connected ? (
-      <Text style={styles.connected}>Connected ✅</Text>
-    ) : (
-      <Button onPress={onConnect}>
-        <Text style={styles.buttonText}>Connect</Text>
-      </Button>
-    )}
-  </View>
+  <TouchableOpacity
+    style={[styles.card, { backgroundColor: selected ? '#00D2FF' : 'white' }]}
+    onPress={onPress}
+    activeOpacity={0.8}
+  >
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Image
+        source={icon}
+        style={{ width: 48, height: 48, marginBottom: 8 }}
+        resizeMode="contain"
+      />
+      <Typo
+        style={{
+          ...styles.name,
+          color: selected ? 'black' : 'black',
+          textAlign: 'center',
+          fontSize: 16,
+          marginTop: 0,
+        }}
+      >
+        {name}
+      </Typo>
+    </View>
+  </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
@@ -115,23 +173,46 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-  heading: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // marginBottom: 5,
+  },
+  backButton: {
+    padding: 10,
+    marginRight: 10,
+  },
+  caretIcon: {
+    fontSize: 28,
     color: 'white',
   },
-  card: {
-    marginBottom: 16,
-    padding: 20,
+  searchInput: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderColor: colors.neutral700,
+    borderRadius: 16,
+    padding: 10,
+    marginBottom: 20,
+    marginTop: 20,
+    height: 50,
+  },
+  platformGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  card: {
+    width: '30%', // 3 cards per row
+    aspectRatio: 1, // makes the card square
+    marginBottom: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 24,
     backgroundColor: 'white',
   },
   name: {
     fontSize: 18,
     color: 'black',
-    fontWeight: 'bold',
+    // fontWeight: 'bold',
   },
   connected: {
     color: 'green',

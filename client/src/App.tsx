@@ -10,13 +10,14 @@ import BottomTabs from './components/BottomTabs';
 import { AppProvider } from './contexts/AppContext';
 import { getToken } from './utils/storage'; // Import your getToken utility
 import ConnectedPlatforms from './screens/ConnectPlatforms';
+import AddCreators from './screens/AddCreators';
 import OAuth from './constants/OAuth';
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 import { Buffer } from 'buffer';
 
 global.Buffer = Buffer;
-global.process = require('process');
+global.process = global.process || require('process');
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -24,10 +25,26 @@ export type RootStackParamList = {
   Home: undefined;
   Tabs: undefined;
   ConnectPlatforms: undefined;
+  AddCreators: undefined;
   OAuth: { platform: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+// Deep linking configuration
+const linking = {
+  prefixes: ['myapp://', 'https://notifybear.com'],
+  config: {
+    screens: {
+      ConnectPlatforms: 'connect-platforms',
+      Login: 'login',
+      Tabs: 'tabs',
+      Home: 'home',
+      OAuth: 'oauth/:platform',
+      AddCreators: 'add-creators',
+    },
+  },
+};
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -49,13 +66,14 @@ function App() {
 
   return (
     <AppProvider>
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
         <Stack.Navigator
           initialRouteName={initialRoute}
           screenOptions={{ headerShown: false }}
         >
           <Stack.Screen name="ConnectPlatforms" component={ConnectedPlatforms} />
           <Stack.Screen name="Login" component={Login} />
+          <Stack.Screen name="AddCreators" component={AddCreators} />
           <Stack.Screen name="OAuth" component={OAuth} />
           <Stack.Screen name="Tabs" component={BottomTabs} />
           <Stack.Screen name="Home" component={Home} />

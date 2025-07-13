@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 import { getToken, removeToken } from '../utils/storage';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
+type Creator = { id: string; name: string; avatar: string; platform: string };
+
 type AppContextType = {
   subscriptions: any[];
   twitchFollows: any[];
@@ -9,6 +11,8 @@ type AppContextType = {
   fetchTwitchFollows: () => Promise<any[]>;
   setSubscriptions: React.Dispatch<React.SetStateAction<any[]>>;
   setTwitchFollows: React.Dispatch<React.SetStateAction<any[]>>;
+  selectedCreators: Creator[];
+  setSelectedCreators: React.Dispatch<React.SetStateAction<Creator[]>>;
 };
 
 const AppContext = createContext<AppContextType>({
@@ -18,15 +22,18 @@ const AppContext = createContext<AppContextType>({
   fetchTwitchFollows: async () => [],
   setSubscriptions: () => {},
   setTwitchFollows: () => {},
+  selectedCreators: [],
+  setSelectedCreators: () => {},
 });
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [twitchFollows, setTwitchFollows] = useState<any[]>([]);
+  const [selectedCreators, setSelectedCreators] = useState<Creator[]>([]);
 
   const fetchYouTubeSubscriptions = useCallback(async () => {
-    let allSubscriptions: any[] = [];
-    let nextPageToken: string | undefined = undefined;
+    let allSubscriptions: any[] = []; // all subscriptions
+    let nextPageToken: string | undefined = undefined; // next page token
 
     // Always get a fresh token
     const { accessToken } = await GoogleSignin.getTokens();
@@ -76,7 +83,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
   
-    const fetchTwitchFollows = useCallback(async () => {
+  const fetchTwitchFollows = useCallback(async () => {
     const twitchToken = await getToken('twitch_token');
     if (!twitchToken) {
       console.log('No Twitch token found - skipping Twitch data fetch');
@@ -121,10 +128,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return [];
     }
   }, []);
-  
+
+
 
   return (
-    <AppContext.Provider value={{ subscriptions, twitchFollows, setSubscriptions, setTwitchFollows, fetchYouTubeSubscriptions, fetchTwitchFollows }}>
+    <AppContext.Provider value={{ 
+      subscriptions, 
+      twitchFollows, 
+      setSubscriptions, 
+      setTwitchFollows, 
+      fetchYouTubeSubscriptions, 
+      fetchTwitchFollows, 
+      selectedCreators,
+      setSelectedCreators,
+    }}>
       {children}
     </AppContext.Provider>
   );

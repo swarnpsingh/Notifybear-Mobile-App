@@ -11,16 +11,16 @@ const Typo = ({
   children,
   style,
   textProps
-}: TypoProps) => { // Define a functional component that takes size, color, fontWeight, children, style, and textProps as props
+}: TypoProps) => {
 
   const textStyle: TextStyle = {
-    fontSize: size ? verticalScale(size): verticalScale(18), // Set font size based on the size prop or default to 18
-    color, // Set text color based on the color prop
-    fontWeight, // Set font weight based on the fontWeight prop
+    fontSize: size ? verticalScale(size) : verticalScale(18),
+    color,
+    fontWeight,
+    fontFamily: 'Poppins', // Set the font family to Poppins
   }
 
-  return <Text style = {[textStyle, style]} {...textProps}>{children}</Text> // Render a Text component with the combined styles and children
-
+  return <Text style={[textStyle, style]} {...textProps}>{children}</Text>
 }
 
 export default Typo

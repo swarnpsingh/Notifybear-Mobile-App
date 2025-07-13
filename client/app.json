@@ -1,4 +1,13 @@
 {
   "name": "NotifybearApp",
-  "displayName": "NotifybearApp"
+  "displayName": "NotifybearApp",
+  "expo": {
+    "scheme": "myapp",
+    "ios": {
+      "bundleIdentifier": "com.notifybearapp"
+    },
+    "android": {
+      "package": "com.notifybearapp"
+    }
+  }
 }

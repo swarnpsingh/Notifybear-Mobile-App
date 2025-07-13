@@ -1,6 +1,6 @@
 import React from 'react';
 import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, Text, View, SafeAreaView, ActivityIndicator, FlatList, ScrollView, Alert } from 'react-native';
+import { StatusBar, StyleSheet, Text, View, SafeAreaView, ActivityIndicator, FlatList, ScrollView, Alert, Image, TouchableOpacity } from 'react-native';
 import {
   GoogleSignin,
   GoogleSigninButton,
@@ -15,6 +15,9 @@ import { storeToken } from '../utils/storage';
 import ScreenWrapper from '../components/ScreenWrapper';
 import TopNav2 from '../components/TopNav2';
 import ConnectedPlatforms from './ConnectPlatforms';
+import Typo from '../components/Typo';
+import GradientText from '../components/GradientText';
+import { colors, spacingX, spacingY } from '../constants/theme';
 
 type LoginProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -49,7 +52,7 @@ function Login({ navigation }: LoginProps) {
         return;
       }
       
-      const response = await fetch('http://192.168.0.104:4000/api/user/google-login', {
+      const response = await fetch('http://192.168.0.108:4000/api/user/google-login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -110,20 +113,61 @@ function Login({ navigation }: LoginProps) {
     }
   };
 
-    return (
+  return (
     <ScreenWrapper>
-      <TopNav2 title="Login" />
       <View style={styles.container}>
-        {!loading && (
-          <GoogleSigninButton
-            size={GoogleSigninButton.Size.Wide}
-            color={GoogleSigninButton.Color.Dark}
-            onPress={handleSignIn}
-          />
-        )}
-        {loading && (
-          <ActivityIndicator size="large" color="#0000ff" />
-        )}
+        <View style={styles.contentContainer}>
+          <View style={styles.welcomeSection}>
+            <Image
+              source={require('../assets/icon-mascot.png')}
+              style={styles.logo}
+            />
+            <GradientText
+              style={{
+                fontSize: 30,
+                fontWeight: '800',
+              }}
+              colors={['#007BFF', '#FFB6C1']}
+            >
+              notifybear
+            </GradientText>
+            <Typo size={20} fontWeight={'200'} style={{ marginTop: 10 }}>
+              Stay on top of your favorite
+            </Typo>
+            <Typo size={20} fontWeight={'200'}>
+              creators' updates
+            </Typo>
+          </View>
+          
+          <View style={styles.buttonContainer}>
+            {!loading && (
+              <TouchableOpacity
+                style={styles.customGoogleButton}
+                onPress={handleSignIn}
+                activeOpacity={0.8}
+              >
+                <View style={styles.buttonContent}>
+                  <Image
+                    source={require('../assets/google-icon.png')}
+                    style={styles.googleIcon}
+                    resizeMode="contain"
+                  />
+                  <Typo size={16} fontWeight="600" style={styles.buttonText}>
+                    Continue with Google
+                  </Typo>
+                </View>
+              </TouchableOpacity>
+            )}
+            {loading && (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Typo size={16} style={{ marginTop: 10 }}>
+                  Signing in...
+                </Typo>
+              </View>
+            )}
+          </View>
+        </View>
       </View>
     </ScreenWrapper>
   );
@@ -132,8 +176,68 @@ function Login({ navigation }: LoginProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: spacingX._20,
+  },
+  contentContainer: {
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacingY._30,
+  },
+  welcomeSection: {
+    alignItems: 'center',
+    // gap: spacingY._20,
+  },
+  logo: {
+    width: 200,
+    height: 200,
+    // marginBottom: spacingY._20,
+  },
+  buttonContainer: {
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: 300,
+    marginTop: spacingY._20,
+  },
+  customGoogleButton: {
+    width: '100%',
+    height: 56,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  googleIcon: {
+    width: 24,
+    height: 24,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+  },
+  googleButton: {
+    width: '100%',
+    height: 50,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacingY._20,
   },
   itemText: {
     fontSize: 16,

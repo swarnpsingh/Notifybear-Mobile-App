@@ -23,6 +23,12 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    twitterId: { 
+      type: String, 
+      unique: true, 
+      sparse: true 
+    },
+
   },
   {
     timestamps: true,

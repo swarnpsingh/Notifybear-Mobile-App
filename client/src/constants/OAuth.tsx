@@ -15,8 +15,8 @@ export default function OAuth() {
   const twitchOAuthUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${encodeURIComponent(scopes)}`;
 
   const onNavChange = async ({ url }: any) => {
-    if (url.startsWith(redirectUri) && url.includes('#access_token=')) {
-      const accessToken = url.split('#access_token=')[1].split('&')[0];
+    if (url.startsWith(redirectUri) && url.includes('#access_token=')) { // if url starts with redirect uri and includes access token
+      const accessToken = url.split('#access_token=')[1].split('&')[0]; // get access token
 
       console.log('Twitch Access Token:', accessToken);
       await storeToken(accessToken, 'twitch_token'); // save to async storage with key

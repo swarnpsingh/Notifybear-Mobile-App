@@ -29,11 +29,12 @@ export default Button;
 
 const styles = StyleSheet.create({
     button: {
-        backgroundColor: '#303A96',
+        backgroundColor: '#0056B3',
         borderRadius: radius._17,
         borderCurve: "continuous",
-        height: verticalScale(50),
+        height: verticalScale(60),
         justifyContent: "center",
         alignItems: "center",
+        width: '80%',
     }
 });
