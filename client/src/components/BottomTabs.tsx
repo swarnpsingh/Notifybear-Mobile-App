@@ -5,6 +5,7 @@ import Home from '../screens/Home';
 import { View, Text,Image, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import YourCreators from '../screens/YourCreators';
 
 const Tab = createBottomTabNavigator();
 
@@ -36,7 +37,13 @@ const BottomTabs = () => {
           ),
         }}
       />
-      
+      <Tab.Screen
+        name="Your Creators"
+        component={YourCreators}
+        options={{
+          tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} />,
+        }}
+      />
     </Tab.Navigator>
   );
 };

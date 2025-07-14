@@ -24,8 +24,8 @@ export type RootStackParamList = {
   Login: undefined;
   Home: undefined;
   Tabs: undefined;
-  ConnectPlatforms: undefined;
-  AddCreators: undefined;
+  ConnectPlatforms: { userId: string } | undefined;
+  AddCreators: { platforms?: string[]; userId?: string } | undefined;
   OAuth: { platform: string };
 };
 

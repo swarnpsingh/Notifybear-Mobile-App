@@ -29,19 +29,7 @@ function Home() {
         <TopNav2 title="Home" />
         <View style={{ flex: 1 }}>
           <View style={styles.container}>
-            {selectedCreators.length > 0 ? (
-              selectedCreators.map(creator => (
-                <View key={creator.id + creator.platform} style={styles.card}>
-                  <Image source={{ uri: creator.avatar }} style={styles.logo} />
-                  <View style={styles.info}>
-                    <Text style={styles.title}>{creator.name}</Text>
-                    <Text style={styles.desc}>{creator.platform}</Text>
-                  </View>
-                </View>
-              ))
-            ) : (
-              <Text style={styles.emptyText}>No creators selected</Text>
-            )}
+            <Typo>Home</Typo>
           </View>
           <View style={{ alignItems: 'center', width: '100%', marginBottom: 24 }}>
             <Button onPress={handleLogout}>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Text } from 'react-native';
+import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Text, Alert } from 'react-native';
 import ScreenWrapper from '../components/ScreenWrapper';
 import Typo from '../components/Typo';
 import { useAppContext } from '../contexts/AppContext';
@@ -17,12 +17,13 @@ type AddCreatorsRouteParams = {
 };
 
 const AddCreators = ({ navigation }: { navigation: any }) => {
-  const route = useRoute<RouteProp<{ params: AddCreatorsRouteParams }, 'params'>>();
+  const route = useRoute<RouteProp<{ params: AddCreatorsRouteParams & { userId?: string } }, 'params'>>();
   const selectedPlatformKeys = (route.params?.platforms ?? ['youtube']) as string[];
   const filteredPlatforms = PLATFORMS.filter(p => selectedPlatformKeys.includes(p.key));
 
   const [selectedPlatform, setSelectedPlatform] = useState(filteredPlatforms[0]?.key || 'youtube');
   const { subscriptions, twitchFollows, selectedCreators, setSelectedCreators } = useAppContext();
+  const userId = route.params?.userId;
 
   // Get creators for the selected platform
   let creators: { id: string; name: string; avatar: string; platform: string }[] = [];
@@ -50,6 +51,28 @@ const AddCreators = ({ navigation }: { navigation: any }) => {
         ? prev.filter(c => !(c.id === creator.id && c.platform === creator.platform))
         : [...prev, creator]
     );
+  };
+
+  const saveCreators = async () => {
+    if (!userId) {
+      Alert.alert('Error', 'User not logged in.');
+      return;
+    }
+    try {
+      const response = await fetch('http://192.168.0.108:4000/api/user/save-selected-creators', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, creators: selectedCreators }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        navigation.navigate('Tabs');
+      } else {
+        Alert.alert('Error', 'Failed to save creators');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save creators');
+    }
   };
 
   return (
@@ -116,9 +139,10 @@ const AddCreators = ({ navigation }: { navigation: any }) => {
         </View>
         <View style={{ alignItems: 'center', width: '100%', marginBottom: 24 }}>
           <Button
-            onPress={() => navigation.navigate('Home')}
+            onPress={saveCreators}
+            disabled={selectedCreators.length === 0}
           >
-            <Typo>Go to Home</Typo>
+            <Typo>Save Creators</Typo>
           </Button>
         </View>
       </View>

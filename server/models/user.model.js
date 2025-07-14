@@ -28,7 +28,14 @@ const userSchema = new mongoose.Schema(
       unique: true, 
       sparse: true 
     },
-
+    selectedCreators: [
+      {
+        id: String,
+        name: String,
+        avatar: String,
+        platform: String,
+      }
+    ],
   },
   {
     timestamps: true,

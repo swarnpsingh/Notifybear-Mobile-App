@@ -13,14 +13,16 @@ import Button from '../components/Button';
 import Typo from '../components/Typo';
 import ScreenWrapper from '../components/ScreenWrapper';
 import TopNav2 from '../components/TopNav2';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
 import { colors } from '../constants/theme';
 
 const ConnectedPlatforms = ({ navigation }: { navigation: any }) => {
+  const route = useRoute();
   const { fetchYouTubeSubscriptions, fetchTwitchFollows } = useAppContext();
   const [selectedPlatforms, setSelectedPlatforms] = useState<Set<string>>(
     new Set(),
   );
+  const userId = (route.params && (route.params as any).userId) || undefined;
 
   // Check for tokens when screen comes into focus
   useFocusEffect(
@@ -117,7 +119,7 @@ const ConnectedPlatforms = ({ navigation }: { navigation: any }) => {
                 // if (selectedPlatforms.has('twitter')) {
                 //   await fetchTwitterFollows();
                 // }
-                navigation.navigate('AddCreators', { platforms: Array.from(selectedPlatforms) });
+                navigation.navigate('AddCreators', { platforms: Array.from(selectedPlatforms), userId });
               } catch (error) {
                 Alert.alert('Error', 'Failed to fetch data. Please try again.');
               }

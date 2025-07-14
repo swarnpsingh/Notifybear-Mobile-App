@@ -10,7 +10,8 @@ const Button = ({
   onPress,
   loading = false,
   children,
-}: CustomButtonProps) => {
+  disabled = false,
+}: CustomButtonProps & { disabled?: boolean }) => {
     if(loading){
         return(
             <View style={[styles.button, style, {backgroundColor: 'transparent'}]}>
@@ -19,7 +20,11 @@ const Button = ({
         )
     }
   return (
-    <TouchableOpacity onPress={onPress} style={[styles.button, style]}>
+    <TouchableOpacity
+      onPress={onPress}
+      style={[styles.button, style, disabled && { backgroundColor: '#888' }]}
+      disabled={disabled}
+    >
         {children}
     </TouchableOpacity>
   );

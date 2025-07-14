@@ -86,23 +86,29 @@ function Login({ navigation }: LoginProps) {
         await storeToken(tokens.accessToken);
         
         // Get current user info separately
-        const currentUser = await GoogleSignin.getCurrentUser();
+        const currentUser: any = await GoogleSignin.getCurrentUser();
         console.log('Current user from GoogleSignin:', currentUser);
         
         // Try to save user to server, but don't fail if it doesn't work
+        let userId = null;
         try {
-          await saveUserToServer(currentUser || userInfo);
+          const userData = {
+            googleId: currentUser?.user?.id || currentUser?.id || currentUser?.userId,
+            email: currentUser?.user?.email || currentUser?.email,
+            name: currentUser?.user?.name || currentUser?.name || currentUser?.displayName,
+            photo: currentUser?.user?.photo || currentUser?.photo || currentUser?.user?.photoURL || currentUser?.photoURL,
+          };
+          const response = await fetch('http://192.168.0.108:4000/api/user/google-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData),
+          });
+          const result = await response.json();
+          userId = result?.user?._id;
         } catch (error) {
           console.log('Server save failed, but continuing with login');
         }
-        
-        // const newSubs = await fetchYouTubeSubscriptions();
-        // if (newSubs && newSubs.length > 0) {
-        //   navigation.replace("ConnectPlatforms");
-        // } else {
-        //   Alert.alert("Login", "No subscriptions found or failed to fetch.");
-        // }
-        navigation.replace("ConnectPlatforms");
+        navigation.replace('ConnectPlatforms', { userId});
       } else {
         Alert.alert("Login", "Token not received");
       }
