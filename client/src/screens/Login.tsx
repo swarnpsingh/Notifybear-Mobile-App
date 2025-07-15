@@ -18,6 +18,7 @@ import ConnectedPlatforms from './ConnectPlatforms';
 import Typo from '../components/Typo';
 import GradientText from '../components/GradientText';
 import { colors, spacingX, spacingY } from '../constants/theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type LoginProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -84,12 +85,9 @@ function Login({ navigation }: LoginProps) {
       
       if (tokens) {
         await storeToken(tokens.accessToken);
-        
         // Get current user info separately
         const currentUser: any = await GoogleSignin.getCurrentUser();
         console.log('Current user from GoogleSignin:', currentUser);
-        
-        // Try to save user to server, but don't fail if it doesn't work
         let userId = null;
         try {
           const userData = {
@@ -105,10 +103,13 @@ function Login({ navigation }: LoginProps) {
           });
           const result = await response.json();
           userId = result?.user?._id;
+          if (userId) {
+            await AsyncStorage.setItem('userId', userId); // Save userId to storage
+          }
         } catch (error) {
           console.log('Server save failed, but continuing with login');
         }
-        navigation.replace('ConnectPlatforms', { userId});
+        navigation.replace('ConnectPlatforms', { userId });
       } else {
         Alert.alert("Login", "Token not received");
       }

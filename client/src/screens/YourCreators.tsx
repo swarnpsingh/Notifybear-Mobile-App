@@ -1,17 +1,22 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, StatusBar, ScrollView, Image } from 'react-native';
-import { colors } from '../constants/theme';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { useAppContext } from '../contexts/AppContext';
 import ScreenWrapper from '../components/ScreenWrapper';
-import Typo from '../components/Typo';
 import TopNav2 from '../components/TopNav2';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { useNavigation } from '@react-navigation/native';
-import Button from '../components/Button';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 function YourCreators() {
   const navigation = useNavigation();
-  const { selectedCreators, setSubscriptions } = useAppContext();
+  const { selectedCreators, fetchSelectedCreators } = useAppContext();
+  const route = useRoute();
+
+  useEffect(() => {
+    const userId = (route.params as { userId?: string })?.userId;
+    if (userId) {
+      fetchSelectedCreators(userId);
+    }
+    // Optionally, handle the case where userId is missing
+  }, [fetchSelectedCreators, route.params]);
 
   return (
     <ScreenWrapper>

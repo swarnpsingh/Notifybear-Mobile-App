@@ -29,7 +29,7 @@ const ConnectedPlatforms = ({ navigation }: { navigation: any }) => {
     React.useCallback(() => {
       const checkTokens = async () => {
         const { getToken } = require('../utils/storage');
-
+        
         // Check Twitch token
         const twitchToken = await getToken('twitch_token');
         if (twitchToken && !selectedPlatforms.has('twitch')) {
@@ -39,7 +39,7 @@ const ConnectedPlatforms = ({ navigation }: { navigation: any }) => {
       checkTokens();
     }, [selectedPlatforms]),
   );
-
+  
   return (
     <ScreenWrapper>
       <View style={styles.container}>
@@ -81,7 +81,7 @@ const ConnectedPlatforms = ({ navigation }: { navigation: any }) => {
                 icon: require('../assets/icons8-twitch.gif'),
               },
             ].map(platform => (
-              <PlatformCard
+        <PlatformCard
                 key={platform.key}
                 name={platform.label}
                 icon={platform.icon}
@@ -97,36 +97,36 @@ const ConnectedPlatforms = ({ navigation }: { navigation: any }) => {
                     return newSet;
                   });
                   if (platform.key === 'twitter')
-                    navigation.navigate('OAuthTwitter');
+            navigation.navigate('OAuthTwitter');
                   if (platform.key === 'twitch')
-                    navigation.navigate('OAuth', { platform: 'twitch' });
-                }}
-              />
+            navigation.navigate('OAuth', { platform: 'twitch' });
+          }}
+        />
             ))}
           </View>
         </View>
         <View style={{ alignItems: 'center', width: '100%', marginBottom: 24 }}>
           <Button
             onPress={async () => {
-              try {
-                // Fetch data for selected platforms
-                if (selectedPlatforms.has('youtube')) {
-                  await fetchYouTubeSubscriptions();
-                }
-                if (selectedPlatforms.has('twitch')) {
-                  await fetchTwitchFollows();
-                }
-                // if (selectedPlatforms.has('twitter')) {
-                //   await fetchTwitterFollows();
-                // }
+          try {
+            // Fetch data for selected platforms
+            if (selectedPlatforms.has('youtube')) {
+              await fetchYouTubeSubscriptions();
+            }
+            if (selectedPlatforms.has('twitch')) {
+              await fetchTwitchFollows();
+            }
+            // if (selectedPlatforms.has('twitter')) {
+            //   await fetchTwitterFollows();
+            // }
                 navigation.navigate('AddCreators', { platforms: Array.from(selectedPlatforms), userId });
-              } catch (error) {
-                Alert.alert('Error', 'Failed to fetch data. Please try again.');
-              }
+          } catch (error) {
+            Alert.alert('Error', 'Failed to fetch data. Please try again.');
+          }
             }}
           >
             <Typo>Proceed ➕</Typo>
-          </Button>
+        </Button>
         </View>
       </View>
     </ScreenWrapper>
@@ -166,7 +166,7 @@ const PlatformCard = ({
       >
         {name}
       </Typo>
-    </View>
+  </View>
   </TouchableOpacity>
 );
 

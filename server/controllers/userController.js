@@ -48,3 +48,14 @@ export const saveSelectedCreators = async (req, res) => {
     res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 };
+
+export const getSelectedCreators = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const user = await User.findById(userId);
+    res.json({ success: true, creators: user.selectedCreators });
+  } catch (err) {
+    console.error('Get Selected Creators Error:', err);
+    res.status(500).json({ error: 'Internal server error', details: err.message });
+  }
+};

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getToken, removeToken } from '../utils/storage';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
@@ -13,6 +14,7 @@ type AppContextType = {
   setTwitchFollows: React.Dispatch<React.SetStateAction<any[]>>;
   selectedCreators: Creator[];
   setSelectedCreators: React.Dispatch<React.SetStateAction<Creator[]>>;
+  fetchSelectedCreators: (userId: string) => Promise<Creator[]>;
 };
 
 const AppContext = createContext<AppContextType>({
@@ -24,6 +26,7 @@ const AppContext = createContext<AppContextType>({
   setTwitchFollows: () => {},
   selectedCreators: [],
   setSelectedCreators: () => {},
+  fetchSelectedCreators: async () => [],
 });
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -129,6 +132,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
+  const fetchSelectedCreators = useCallback(async (userId: string) => {
+    try {
+      const response = await fetch(`http://192.168.0.108:4000/api/user/get-selected-creators?userId=${userId}`);
+      const data = await response.json();
+      if (data.success && data.creators) {
+        setSelectedCreators(data.creators);
+        return data.creators;
+      }
+    } catch (err) {
+      console.error('Failed to fetch selected creators:', err);
+    }
+    return [];
+  }, []);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const userId = await AsyncStorage.getItem('userId');
+      if (userId) {
+        fetchSelectedCreators(userId);
+      }
+    };
+    loadUser();
+  }, [fetchSelectedCreators]);
 
 
   return (
@@ -141,6 +167,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       fetchTwitchFollows, 
       selectedCreators,
       setSelectedCreators,
+      fetchSelectedCreators
     }}>
       {children}
     </AppContext.Provider>

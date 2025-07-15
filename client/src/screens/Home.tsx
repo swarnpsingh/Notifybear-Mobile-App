@@ -13,6 +13,8 @@ function Home() {
   const navigation = useNavigation();
   const { selectedCreators, setSubscriptions } = useAppContext();
 
+  console.log(selectedCreators);
+
   const handleLogout = async () => {
     try {
       await GoogleSignin.signOut();
