@@ -58,11 +58,15 @@ const AddCreators = ({ navigation }: { navigation: any }) => {
       Alert.alert('Error', 'User not logged in.');
       return;
     }
+    // Deduplicate creators by id+platform
+    const uniqueCreators = Array.from(
+      new Map(selectedCreators.map(c => [`${c.id}-${c.platform}`, c])).values()
+    );
     try {
       const response = await fetch('http://192.168.0.108:4000/api/user/save-selected-creators', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, creators: selectedCreators }),
+        body: JSON.stringify({ userId, creators: uniqueCreators }),
       });
       const data = await response.json();
       if (data.success) {

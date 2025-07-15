@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getToken, removeToken } from '../utils/storage';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Creator = { id: string; name: string; avatar: string; platform: string };
 
@@ -148,14 +148,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     const loadUser = async () => {
-      const userId = await AsyncStorage.getItem('userId');
-      if (userId) {
-        fetchSelectedCreators(userId);
+      try {
+        const userId = await AsyncStorage.getItem('userId');
+        if (userId) {
+          await fetchSelectedCreators(userId);
+        }
+      } catch (err) {
+        console.error('Error loading userId from storage:', err);
       }
     };
     loadUser();
   }, [fetchSelectedCreators]);
-
 
   return (
     <AppContext.Provider value={{ 

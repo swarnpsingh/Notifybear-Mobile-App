@@ -34,6 +34,8 @@ const userSchema = new mongoose.Schema(
         name: String,
         avatar: String,
         platform: String,
+        lastChecked: Date,
+        lastActivityId: String,
       }
     ],
   },
