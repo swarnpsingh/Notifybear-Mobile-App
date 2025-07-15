@@ -53,9 +53,24 @@ export const getSelectedCreators = async (req, res) => {
   try {
     const { userId } = req.query;
     const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
     res.json({ success: true, creators: user.selectedCreators });
   } catch (err) {
     console.error('Get Selected Creators Error:', err);
+    res.status(500).json({ error: 'Internal server error', details: err.message });
+  }
+};
+
+export const getUser = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ success: true, user });
+  } catch (err) {
+    console.error('Get User Error:', err);
     res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 };

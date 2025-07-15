@@ -15,6 +15,7 @@ import ScreenWrapper from '../components/ScreenWrapper';
 import TopNav2 from '../components/TopNav2';
 import { useFocusEffect, useRoute } from '@react-navigation/native';
 import { colors } from '../constants/theme';
+import { useUser } from '../contexts/UserContext';
 
 const ConnectedPlatforms = ({ navigation }: { navigation: any }) => {
   const route = useRoute();
@@ -22,7 +23,8 @@ const ConnectedPlatforms = ({ navigation }: { navigation: any }) => {
   const [selectedPlatforms, setSelectedPlatforms] = useState<Set<string>>(
     new Set(),
   );
-  const userId = (route.params && (route.params as any).userId) || undefined;
+  const { user } = useUser();
+  // const userId = (route.params && (route.params as any).userId) || undefined; // REMOVE THIS
 
   // Check for tokens when screen comes into focus
   useFocusEffect(
@@ -85,7 +87,7 @@ const ConnectedPlatforms = ({ navigation }: { navigation: any }) => {
                 key={platform.key}
                 name={platform.label}
                 icon={platform.icon}
-                selected={selectedPlatforms.has(platform.key)}
+                selected={selectedPlatforms.has(platform.key)} // check if the platform is selected
                 onPress={() => {
                   setSelectedPlatforms(prev => {
                     const newSet = new Set(prev);
@@ -116,10 +118,8 @@ const ConnectedPlatforms = ({ navigation }: { navigation: any }) => {
             if (selectedPlatforms.has('twitch')) {
               await fetchTwitchFollows();
             }
-            // if (selectedPlatforms.has('twitter')) {
-            //   await fetchTwitterFollows();
-            // }
-                navigation.navigate('AddCreators', { platforms: Array.from(selectedPlatforms), userId });
+            // Only pass platforms, not userId
+            navigation.navigate('AddCreators', { platforms: Array.from(selectedPlatforms) });
           } catch (error) {
             Alert.alert('Error', 'Failed to fetch data. Please try again.');
           }

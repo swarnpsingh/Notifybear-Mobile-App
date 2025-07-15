@@ -3,9 +3,9 @@ import { getToken, removeToken } from '../utils/storage';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-type Creator = { id: string; name: string; avatar: string; platform: string };
+type Creator = { id: string; name: string; avatar: string; platform: string }; // type for the creators
 
-type AppContextType = {
+type AppContextType = { // type for the app context
   subscriptions: any[];
   twitchFollows: any[];
   fetchYouTubeSubscriptions: () => Promise<any[]>;
@@ -14,10 +14,9 @@ type AppContextType = {
   setTwitchFollows: React.Dispatch<React.SetStateAction<any[]>>;
   selectedCreators: Creator[];
   setSelectedCreators: React.Dispatch<React.SetStateAction<Creator[]>>;
-  fetchSelectedCreators: (userId: string) => Promise<Creator[]>;
 };
 
-const AppContext = createContext<AppContextType>({
+const AppContext = createContext<AppContextType>({ // create the app context
   subscriptions: [],
   twitchFollows: [],
   fetchYouTubeSubscriptions: async () => [],
@@ -26,7 +25,6 @@ const AppContext = createContext<AppContextType>({
   setTwitchFollows: () => {},
   selectedCreators: [],
   setSelectedCreators: () => {},
-  fetchSelectedCreators: async () => [],
 });
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -34,9 +32,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [twitchFollows, setTwitchFollows] = useState<any[]>([]);
   const [selectedCreators, setSelectedCreators] = useState<Creator[]>([]);
 
+  // This function fetches the YouTube subscriptions for the current user.
   const fetchYouTubeSubscriptions = useCallback(async () => {
     let allSubscriptions: any[] = []; // all subscriptions
-    let nextPageToken: string | undefined = undefined; // next page token
+    // This variable keeps track of the next page token for paginated YouTube API results.
+    let nextPageToken: string | undefined = undefined;
 
     // Always get a fresh token
     const { accessToken } = await GoogleSignin.getTokens();
@@ -132,34 +132,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
-  const fetchSelectedCreators = useCallback(async (userId: string) => {
-    try {
-      const response = await fetch(`http://192.168.0.108:4000/api/user/get-selected-creators?userId=${userId}`);
-      const data = await response.json();
-      if (data.success && data.creators) {
-        setSelectedCreators(data.creators);
-        return data.creators;
-      }
-    } catch (err) {
-      console.error('Failed to fetch selected creators:', err);
-    }
-    return [];
-  }, []);
-
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const userId = await AsyncStorage.getItem('userId');
-        if (userId) {
-          await fetchSelectedCreators(userId);
-        }
-      } catch (err) {
-        console.error('Error loading userId from storage:', err);
-      }
-    };
-    loadUser();
-  }, [fetchSelectedCreators]);
-
   return (
     <AppContext.Provider value={{ 
       subscriptions, 
@@ -169,8 +141,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       fetchYouTubeSubscriptions, 
       fetchTwitchFollows, 
       selectedCreators,
-      setSelectedCreators,
-      fetchSelectedCreators
+      setSelectedCreators
     }}>
       {children}
     </AppContext.Provider>

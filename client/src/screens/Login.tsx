@@ -19,6 +19,7 @@ import Typo from '../components/Typo';
 import GradientText from '../components/GradientText';
 import { colors, spacingX, spacingY } from '../constants/theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useUser } from '../contexts/UserContext';
 
 type LoginProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -30,89 +31,48 @@ GoogleSignin.configure({
 });
 
 function Login({ navigation }: LoginProps) {
-  const { fetchYouTubeSubscriptions, subscriptions } = useAppContext();
   const [loading, setLoading] = useState(false);
-
-  const saveUserToServer = async (userInfo: any) => {
-    try {
-      console.log('Full userInfo object:', JSON.stringify(userInfo, null, 2));
-      
-      // Try different possible property paths
-      const userData = {
-        googleId: userInfo.user?.id || userInfo.id || userInfo.userId,
-        email: userInfo.user?.email || userInfo.email,
-        name: userInfo.user?.name || userInfo.name || userInfo.displayName,
-        photo: userInfo.user?.photo || userInfo.photo || userInfo.user?.photoURL || userInfo.photoURL,
-      };
-      
-      console.log('Extracted user data:', userData);
-      
-      // Check if we have valid data
-      if (!userData.googleId || !userData.email) {
-        console.error('Missing required user data:', userData);
-        return;
-      }
-      
-      const response = await fetch('http://192.168.0.108:4000/api/user/google-login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-      
-      console.log('Response status:', response.status);
-      const responseText = await response.text();
-      console.log('Response body:', responseText);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to save user to server: ${response.status} - ${responseText}`);
-      }
-      
-      const result = JSON.parse(responseText);
-      console.log('User saved to server:', result);
-    } catch (error) {
-      console.error('Error saving user to server:', error);
-    }
-  };
+  const { setUser } = useUser();
 
   const handleSignIn = async () => {
     setLoading(true);
     try {
-      await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-      const tokens = await GoogleSignin.getTokens();
+      await GoogleSignin.hasPlayServices(); // check if play services are available
+      const userInfo = await GoogleSignin.signIn(); 
+      const tokens = await GoogleSignin.getTokens(); // get tokens after sign in
       
       if (tokens) {
-        await storeToken(tokens.accessToken);
+        await storeToken(tokens.accessToken); // store token
         
         // Get current user info separately
-        const currentUser: any = await GoogleSignin.getCurrentUser();
-        console.log('Current user from GoogleSignin:', currentUser);
+        const currentUser: any = await GoogleSignin.getCurrentUser(); // get current user info
         
         // Try to save user to server, but don't fail if it doesn't work
-        let userId = null;
+        let userObj = null;
         try {
-          const userData = {
-            googleId: currentUser?.user?.id || currentUser?.id || currentUser?.userId,
-            email: currentUser?.user?.email || currentUser?.email,
-            name: currentUser?.user?.name || currentUser?.name || currentUser?.displayName,
-            photo: currentUser?.user?.photo || currentUser?.photo || currentUser?.user?.photoURL || currentUser?.photoURL,
+          const userData = { // create a variable to store user data
+            googleId: currentUser?.user?.id,
+            email: currentUser?.user?.email,
+            name: currentUser?.user?.name,
+            photo: currentUser?.user?.photo,
           };
+          console.log('userData', userData); // log user data
           const response = await fetch('http://192.168.0.108:4000/api/user/google-login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData),
           });
-          const result = await response.json();
-          userId = result?.user?._id;
+          const result = await response.json(); // parse the response in JSON format
+          userObj = result?.user;
         } catch (error) {
           console.log('Server save failed, but continuing with login');
         }
-        if (userId) {
-          await AsyncStorage.setItem('userId', userId);
+        if (userObj && userObj._id) {
+          await AsyncStorage.setItem('user', JSON.stringify(userObj));
+          await AsyncStorage.setItem('userId', userObj._id); // for legacy code
+          setUser(userObj);
         }
-        navigation.replace('ConnectPlatforms', { userId});
+        navigation.replace('ConnectPlatforms'); // No userId param
       } else {
         Alert.alert("Login", "Token not received");
       }

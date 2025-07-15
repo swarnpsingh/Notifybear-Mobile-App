@@ -4,10 +4,12 @@ import { useAppContext } from '../contexts/AppContext';
 import ScreenWrapper from '../components/ScreenWrapper';
 import TopNav2 from '../components/TopNav2';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useUser } from '../contexts/UserContext';
 
 function YourCreators() {
   const navigation = useNavigation();
-  const { selectedCreators, fetchSelectedCreators } = useAppContext();
+  const { user, fetchSelectedCreators } = useUser();
+  const selectedCreators = user?.selectedCreators || [];
   const route = useRoute();
 
   useEffect(() => {

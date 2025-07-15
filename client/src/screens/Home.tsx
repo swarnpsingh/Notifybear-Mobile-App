@@ -8,12 +8,12 @@ import TopNav2 from '../components/TopNav2';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useNavigation } from '@react-navigation/native';
 import Button from '../components/Button';
+import { useUser } from '../contexts/UserContext';
 
 function Home() {
   const navigation = useNavigation();
   const { selectedCreators, setSubscriptions } = useAppContext();
-
-  console.log(selectedCreators);
+  const { user } = useUser();
 
   const handleLogout = async () => {
     try {
@@ -32,6 +32,11 @@ function Home() {
         <View style={{ flex: 1 }}>
           <View style={styles.container}>
             <Typo>Home</Typo>
+            <Typo>Name: {user?.name || 'No name'}</Typo>
+            <Typo>Email: {user?.email || 'No email'}</Typo>
+            <Typo>Google ID: {user?.googleId || 'No google id'}</Typo>
+            {/* <Typo>Photo: {user?.photo || 'No photo'}</Typo> */}
+            <Typo>Selected Creators: {user?.selectedCreators?.length || 'No selected creators'}</Typo>
           </View>
           <View style={{ alignItems: 'center', width: '100%', marginBottom: 24 }}>
             <Button onPress={handleLogout}>

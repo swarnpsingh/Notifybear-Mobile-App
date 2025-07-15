@@ -5,8 +5,9 @@ import Typo from '../components/Typo';
 import { useAppContext } from '../contexts/AppContext';
 import Button from '../components/Button';
 import { RouteProp, useRoute } from '@react-navigation/native';
+import { useUser } from '../contexts/UserContext';
 
-const PLATFORMS = [
+const PLATFORMS = [ // array of all possible platforms
   { key: 'youtube', label: 'YouTube', icon: require('../assets/icons8-youtube-48.png'), color: '#00D2FF' },
   { key: 'twitch', label: 'Twitch', icon: require('../assets/icons8-twitch.gif'), color: '#6441a5' },
   // Add more platforms as you implement them
@@ -17,18 +18,19 @@ type AddCreatorsRouteParams = {
 };
 
 const AddCreators = ({ navigation }: { navigation: any }) => {
-  const route = useRoute<RouteProp<{ params: AddCreatorsRouteParams & { userId?: string } }, 'params'>>();
-  const selectedPlatformKeys = (route.params?.platforms ?? ['youtube']) as string[];
+  const route = useRoute<RouteProp<{ params: AddCreatorsRouteParams }, 'params'>>();
+  const selectedPlatformKeys = (route.params?.platforms ?? ['youtube']) as string[]; // get the selected platforms from the route params, default is YouTube
   const filteredPlatforms = PLATFORMS.filter(p => selectedPlatformKeys.includes(p.key));
 
   const [selectedPlatform, setSelectedPlatform] = useState(filteredPlatforms[0]?.key || 'youtube');
   const { subscriptions, twitchFollows, selectedCreators, setSelectedCreators } = useAppContext();
-  const userId = route.params?.userId;
+  const { user } = useUser();
+  const userId = user?._id; // Use from context
 
   // Get creators for the selected platform
-  let creators: { id: string; name: string; avatar: string; platform: string }[] = [];
+  let creators: { id: string; name: string; avatar: string; platform: string }[] = []; // created a variable to store the creators and defined the type for the creators
   if (selectedPlatform === 'youtube') {
-    creators = subscriptions.map((item: any) => ({
+    creators = subscriptions.map((item: any) => ({ // map the subscriptions to the creators
       id: item.id,
       name: item.snippet.title,
       avatar: item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.default?.url,
@@ -45,22 +47,26 @@ const AddCreators = ({ navigation }: { navigation: any }) => {
     }));
   }
 
-  const toggleCreator = (creator: { id: string; name: string; avatar: string; platform: string }) => {
+  // This function toggles the selection state of a creator in the selectedCreators list.
+  // If the creator is already selected (matched by id and platform), it removes them from the list.
+  // If the creator is not selected, it adds them to the list.
+  const toggleCreator = (creator: { id: string; name: string; avatar: string; platform: string }) => { 
     setSelectedCreators(prev =>
-      prev.some(c => c.id === creator.id && c.platform === creator.platform)
-        ? prev.filter(c => !(c.id === creator.id && c.platform === creator.platform))
-        : [...prev, creator]
+      prev.some(c => c.id === creator.id && c.platform === creator.platform) // check if the creator is already selected
+        ? prev.filter(c => !(c.id === creator.id && c.platform === creator.platform)) // if the creator is already selected, remove them from the list
+        : [...prev, creator] // if the creator is not selected, add them to the list
     );
   };
 
+  // This function saves the selected creators to the server.
   const saveCreators = async () => {
     if (!userId) {
       Alert.alert('Error', 'User not logged in.');
       return;
     }
-    // Deduplicate creators by id+platform
+    // Deduplicate creators by id+platform, so that each creator is only added once
     const uniqueCreators = Array.from(
-      new Map(selectedCreators.map(c => [`${c.id}-${c.platform}`, c])).values()
+      new Map(selectedCreators.map(c => [`${c.id}-${c.platform}`, c])).values() // create a map of the selected creators by id and platform
     );
     try {
       const response = await fetch('http://192.168.0.108:4000/api/user/save-selected-creators', {

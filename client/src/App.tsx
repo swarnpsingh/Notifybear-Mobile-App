@@ -15,6 +15,7 @@ import OAuth from './constants/OAuth';
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 import { Buffer } from 'buffer';
+import { UserProvider } from './contexts/UserContext';
 
 global.Buffer = Buffer;
 global.process = global.process || require('process');
@@ -65,6 +66,7 @@ function App() {
     ); // Show splash until auth check is done
 
   return (
+    <UserProvider>
     <AppProvider>
     <NavigationContainer linking={linking}>
         <Stack.Navigator
@@ -80,6 +82,7 @@ function App() {
         </Stack.Navigator>
       </NavigationContainer>
       </AppProvider>
+      </UserProvider>
     );
 }
 
