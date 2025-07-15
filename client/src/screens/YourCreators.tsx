@@ -1,24 +1,24 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
-import { useAppContext } from '../contexts/AppContext';
 import ScreenWrapper from '../components/ScreenWrapper';
 import TopNav2 from '../components/TopNav2';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { useUser } from '../contexts/UserContext';
 
 function YourCreators() {
   const navigation = useNavigation();
   const { user, fetchSelectedCreators } = useUser();
-  const selectedCreators = user?.selectedCreators || [];
-  const route = useRoute();
+  // Normalize: ensure each creator has an id (fallback to creatorId if present)
+  const selectedCreators = (user?.selectedCreators || []).map(c => ({
+    ...c,
+    id: c.id || (c as any).creatorId || `${c.platform}-${Math.random()}`,
+  }));
 
   useEffect(() => {
-    const userId = (route.params as { userId?: string })?.userId;
-    if (userId) {
-      fetchSelectedCreators(userId);
+    if (user?._id) {
+      fetchSelectedCreators(user._id);
     }
-    // Optionally, handle the case where userId is missing
-  }, [fetchSelectedCreators, route.params]);
+  }, [fetchSelectedCreators, user?._id]);
 
   return (
     <ScreenWrapper>
@@ -28,7 +28,7 @@ function YourCreators() {
           <View style={styles.container}>
             {selectedCreators.length > 0 ? (
               selectedCreators.map(creator => (
-                <View key={creator.id + creator.platform} style={styles.card}>
+                <View key={`${creator.id}-${creator.platform}`} style={styles.card}>
                   <Image source={{ uri: creator.avatar }} style={styles.logo} />
                   <View style={styles.info}>
                     <Text style={styles.title}>{creator.name}</Text>

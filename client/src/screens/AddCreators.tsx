@@ -28,10 +28,11 @@ const AddCreators = ({ navigation }: { navigation: any }) => {
   const userId = user?._id; // Use from context
 
   // Get creators for the selected platform
-  let creators: { id: string; name: string; avatar: string; platform: string }[] = []; // created a variable to store the creators and defined the type for the creators
+  let creators: { id: string; name: string; avatar: string; platform: string; creatorId?: string }[] = [];
   if (selectedPlatform === 'youtube') {
-    creators = subscriptions.map((item: any) => ({ // map the subscriptions to the creators
-      id: item.id,
+    creators = subscriptions.map((item: any) => ({
+      id: item.snippet.resourceId?.channelId, // Use the real YouTube channel ID
+      creatorId: item.snippet.resourceId?.channelId, // Explicitly store as creatorId for backend polling
       name: item.snippet.title,
       avatar: item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.default?.url,
       platform: 'youtube',
@@ -39,6 +40,7 @@ const AddCreators = ({ navigation }: { navigation: any }) => {
   } else if (selectedPlatform === 'twitch') {
     creators = twitchFollows.map((item: any) => ({
       id: item.broadcaster_id,
+      creatorId: item.broadcaster_id, // For consistency, also store as creatorId
       name: item.broadcaster_name,
       avatar: item.broadcaster_login
         ? `https://static-cdn.jtvnw.net/jtv_user_pictures/${item.broadcaster_login}-profile_image-300x300.png`
@@ -64,9 +66,16 @@ const AddCreators = ({ navigation }: { navigation: any }) => {
       Alert.alert('Error', 'User not logged in.');
       return;
     }
-    // Deduplicate creators by id+platform, so that each creator is only added once
+    // Log creators for verification
+    console.log('Creators to be saved:', selectedCreators);
+    // Deduplicate creators by creatorId (or id) + platform
     const uniqueCreators = Array.from(
-      new Map(selectedCreators.map(c => [`${c.id}-${c.platform}`, c])).values() // create a map of the selected creators by id and platform
+      new Map(
+        selectedCreators.map(c => [
+          `${(c as any).creatorId || c.id}-${c.platform}`,
+          { ...c, creatorId: (c as any).creatorId || c.id, id: (c as any).creatorId || c.id }
+        ])
+      ).values()
     );
     try {
       const response = await fetch('http://192.168.0.108:4000/api/user/save-selected-creators', {
