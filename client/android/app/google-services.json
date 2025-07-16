@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "317554763151",
+    "project_id": "notifybear-a",
+    "storage_bucket": "notifybear-a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:317554763151:android:233bb8cc794b13e4fa97fa",
+        "android_client_info": {
+          "package_name": "com.notifybearApp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAG0xOJY9iWwMuDJSJeTMQA7nI0EIbYXB4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
