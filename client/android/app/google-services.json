@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:317554763151:android:233bb8cc794b13e4fa97fa",
+        "mobilesdk_app_id": "1:317554763151:android:990c634afe25f2fafa97fa",
         "android_client_info": {
-          "package_name": "com.notifybearApp"
+          "package_name": "com.notifybearapp"
         }
       },
       "oauth_client": [],

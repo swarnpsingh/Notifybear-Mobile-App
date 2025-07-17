@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useAppContext } from '../contexts/AppContext';
 import ScreenWrapper from '../components/ScreenWrapper';
 import Typo from '../components/Typo';
@@ -12,6 +12,7 @@ import CreatorCard from '../components/CreatorCard';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import CreatorAvatarCard from '../components/CreatorAvatarCard';
+import {PermissionsAndroid} from 'react-native';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -33,6 +34,17 @@ function Home() {
         console.error('Failed to fetch activity feed:', err);
       });
   }, []);
+
+  const requestPermissionAndroid = async () => {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
+      );
+      if (granted===PermissionsAndroid.RESULTS.GRANTED){
+        Alert.alert("Permission Granted")
+      } else {
+        Alert.alert("Permission Denied")
+      }
+    };
 
   // Map activityFeed by creatorId for quick lookup
   const latestVideoByCreator: Record<string, any> = {};

@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { View, Text } from 'react-native';
+import { View, Text, Alert } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Home from './screens/Home';
 import Splash from './screens/Splash';
@@ -16,6 +16,7 @@ import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 import { Buffer } from 'buffer';
 import { UserProvider } from './contexts/UserContext';
+import messaging from '@react-native-firebase/messaging';
 
 global.Buffer = Buffer;
 global.process = global.process || require('process');
@@ -51,6 +52,8 @@ const linking = {
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [initialRoute, setInitialRoute] = useState<'Login' | 'Tabs'>('Login');
+  const { useUser } = require('./contexts/UserContext');
+  const { user } = useUser();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -60,6 +63,40 @@ function App() {
     };
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    // Register for FCM and send token to backend
+    const registerForPushNotifications = async () => {
+      try {
+        const authStatus = await messaging().requestPermission();
+        const enabled =
+          authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+          authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+          if (enabled && user && typeof user._id === 'string' && user._id.length > 0) {
+            const fcmToken = await messaging().getToken();
+            await fetch('http://192.168.0.108:4000/api/user/save-fcm-token', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: user._id, fcmToken }),
+            });
+          }
+      } catch (err) {
+        console.error('FCM registration error:', err);
+      }
+    };
+    registerForPushNotifications();
+
+    // Handle foreground notifications
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      if (remoteMessage.notification) {
+        Alert.alert(
+          remoteMessage.notification.title || 'Notification',
+          remoteMessage.notification.body || ''
+        );
+      }
+    });
+    return unsubscribe;
+  }, [user]);
 
   if (isLoading)
     return (

@@ -1,5 +1,11 @@
 import axios from 'axios';
 import User from '../models/user.model.js';
+import admin from 'firebase-admin';
+
+// Initialize once at server start (e.g., in server.js)
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(), // or use a service account
+});
 
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || 'AIzaSyDPnXni3z8YR8NC6NET96BmHYc5m6Q0sEw';
 const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
@@ -76,6 +82,25 @@ class YouTubeService {
           }
         );
         console.log(`[YouTube Polling] Updated DB for ${channelId} with video:`, newVideo);
+
+        // Send notification when new activity is detected
+        if (user.fcmToken) {
+          const payload = {
+            notification: {
+              title: `New activity from ${creator.name}`,
+              body: newVideo ? newVideo.title : (newLive ? latestLive.title : latestPost.title),
+            },
+            data: {
+              creatorId: creator.creatorId,
+              activityType: newVideo ? 'video' : (newLive ? 'live' : 'post'),
+              activityId: newVideo ? newVideo.id : (newLive ? newLive.id : newPost.id),
+            },
+          };
+          await admin.messaging().sendToDevice(user.fcmToken, payload);
+          console.log(`[YouTube Polling] Sent notification for ${channelId}`);
+        } else {
+          console.log(`[YouTube Polling] No FCM token for ${channelId}, skipping notification.`);
+        }
       }
     } catch (err) {
       if (err.response && err.response.status === 403) {

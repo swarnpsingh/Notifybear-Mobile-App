@@ -74,3 +74,15 @@ export const getUser = async (req, res) => {
     res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 };
+
+// Save FCM token for a user
+export const saveFcmToken = async (req, res) => {
+  const { userId, fcmToken } = req.body;
+  if (!userId || !fcmToken) return res.status(400).json({ error: 'Missing userId or fcmToken' });
+  try {
+    await User.updateOne({ _id: userId }, { $set: { fcmToken } });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save FCM token' });
+  }
+};
