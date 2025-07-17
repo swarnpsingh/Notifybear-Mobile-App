@@ -50,6 +50,8 @@ const userSchema = new mongoose.Schema(
         youtube: {
           lastPolled: Date,
           lastVideoId: String,
+          lastVideoTitle: String, // Added for feed
+          lastVideoPublishedAt: Date, // Added for feed
           lastLiveId: String,
           lastPostId: String,
           etag: String // For API caching

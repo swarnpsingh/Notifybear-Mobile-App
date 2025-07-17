@@ -9,8 +9,12 @@ class YouTubeService {
   static async pollAllCreators() {
     try {
       const users = await User.find({ 'selectedCreators.platform': 'youtube' });
+      console.log('[YouTube Polling] Found users:', users.length);
       for (const user of users) {
-        for (const creator of user.selectedCreators.filter(c => c.platform === 'youtube')) {
+        const ytCreators = user.selectedCreators.filter(c => c.platform === 'youtube');
+        console.log(`[YouTube Polling] User: ${user.email}, YouTube creators: ${ytCreators.length}`);
+        for (const creator of ytCreators) {
+          console.log(`[YouTube Polling] Polling creator: ${creator.name}, channelId: ${creator.creatorId}`);
           await YouTubeService.pollCreatorActivities(user, creator);
         }
       }
@@ -23,7 +27,9 @@ class YouTubeService {
   static async pollCreatorActivities(user, creator) {
     try {
       const channelId = creator.creatorId || creator.id;
+      console.log('[YouTube Polling] pollCreatorActivities for:', channelId);
       const activities = await YouTubeService.getChannelActivities(channelId, creator.youtube?.etag);
+      console.log('[YouTube Polling] Activities for', channelId, activities);
       if (!activities) return;
 
       // Process activities: compare with lastVideoId, lastLiveId, lastPostId
@@ -61,12 +67,15 @@ class YouTubeService {
             $set: {
               'selectedCreators.$.youtube.lastPolled': new Date(),
               'selectedCreators.$.youtube.lastVideoId': newVideo ? newVideo.id : lastVideoId,
+              'selectedCreators.$.youtube.lastVideoTitle': newVideo ? newVideo.title : (creator.youtube?.lastVideoTitle || ''), // Store title
+              'selectedCreators.$.youtube.lastVideoPublishedAt': newVideo ? newVideo.publishedAt : (creator.youtube?.lastVideoPublishedAt || null), // Store publishedAt
               'selectedCreators.$.youtube.lastLiveId': newLive ? newLive.id : lastLiveId,
               'selectedCreators.$.youtube.lastPostId': newPost ? newPost.id : lastPostId,
               'selectedCreators.$.youtube.etag': newEtag,
             },
           }
         );
+        console.log(`[YouTube Polling] Updated DB for ${channelId} with video:`, newVideo);
       }
     } catch (err) {
       if (err.response && err.response.status === 403) {

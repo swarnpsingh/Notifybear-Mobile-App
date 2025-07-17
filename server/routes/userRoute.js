@@ -25,4 +25,38 @@ router.get('/activities', async (req, res) => {
   }
 });
 
+// GET /youtube/activity-feed
+router.get('/youtube/activity-feed', async (req, res) => {
+  try {
+    // Get all users with selectedCreators
+    const users = await (await import('../models/user.model.js')).default.find({ 'selectedCreators.platform': 'youtube' });
+    const feed = [];
+    users.forEach(user => {
+      user.selectedCreators.filter(c => c.platform === 'youtube').forEach(creator => {
+        // Only include if there is a lastVideoId
+        if (creator.youtube && creator.youtube.lastVideoId) {
+          feed.push({
+            creator: {
+              name: creator.name,
+              avatar: creator.avatar,
+              creatorId: creator.creatorId,
+            },
+            videoId: creator.youtube.lastVideoId,
+            videoTitle: creator.youtube.lastVideoTitle || '',
+            publishedAt: creator.youtube.lastVideoPublishedAt,
+            videoUrl: `https://www.youtube.com/watch?v=${creator.youtube.lastVideoId}`,
+            videoThumbnail: `https://i.ytimg.com/vi/${creator.youtube.lastVideoId}/hqdefault.jpg`,
+          });
+        }
+      });
+    });
+    // Sort by publishedAt descending
+    feed.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+    res.json({ success: true, feed });
+  } catch (err) {
+    console.error('Error fetching YouTube activity feed:', err);
+    res.status(500).json({ error: 'Failed to fetch activity feed', details: err.message });
+  }
+});
+
 export default router;

@@ -28,6 +28,7 @@ export type RootStackParamList = {
   ConnectPlatforms: { userId: string } | undefined;
   AddCreators: { platforms?: string[]; userId?: string } | undefined;
   OAuth: { platform: string };
+  CreatorDetail: { creator: any };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -79,6 +80,7 @@ function App() {
           <Stack.Screen name="OAuth" component={OAuth} />
           <Stack.Screen name="Tabs" component={BottomTabs} />
           <Stack.Screen name="Home" component={Home} />
+          <Stack.Screen name="CreatorDetail" component={require('./screens/CreatorDetail').default} />
         </Stack.Navigator>
       </NavigationContainer>
       </AppProvider>
